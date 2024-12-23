@@ -1,0 +1,83 @@
+package org.example;
+
+import org.junit.jupiter.api.*;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import static org.junit.jupiter.api.Assertions.*;
+
+public class BookingSayurGUITest {
+
+    private static final String TEST_FILE = "test_pesanan.txt";
+
+    private static List<BookingSayurGUI.Pesanan> daftarPesanan;
+
+    @BeforeEach
+    public void setUp() {
+        daftarPesanan = new ArrayList<>();
+        daftarPesanan.add(new BookingSayurGUI.Pesanan("John Doe", "Jl. Mawar", "Bayam", 5));
+        daftarPesanan.add(new BookingSayurGUI.Pesanan("Jane Doe", "Jl. Melati", "Kangkung", 3));
+    }
+
+    @AfterEach
+    public void tearDown() throws IOException {
+        Files.deleteIfExists(Paths.get(TEST_FILE));
+    }
+
+    @Test
+    public void testTampilkanPesanan() {
+        assertEquals(2, daftarPesanan.size());
+        assertEquals("John Doe", daftarPesanan.get(0).getNamaPembeli());
+        assertEquals("Jane Doe", daftarPesanan.get(1).getNamaPembeli());
+    }
+
+    @Test
+    public void testUpdatePesanan() {
+        BookingSayurGUI.Pesanan pesanan = daftarPesanan.get(0);
+        pesanan.setNamaPembeli("John Updated");
+        pesanan.setAlamat("Jl. Updated");
+        pesanan.setPesanan("Sawi");
+        pesanan.setJumlah(6);
+
+        assertEquals("John Updated", pesanan.getNamaPembeli());
+        assertEquals("Jl. Updated", pesanan.getAlamat());
+        assertEquals("Sawi", pesanan.getPesanan());
+        assertEquals(6, pesanan.getJumlah());
+    }
+
+    @Test
+    public void testHapusPesanan() {
+        BookingSayurGUI.Pesanan pesanan = daftarPesanan.get(1);
+        daftarPesanan.remove(pesanan);
+
+        assertEquals(1, daftarPesanan.size());
+        assertEquals("John Doe", daftarPesanan.get(0).getNamaPembeli());
+    }
+
+    @Test
+    public void testSimpanPesananKeFile() throws IOException {
+        try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(TEST_FILE))) {
+            for (BookingSayurGUI.Pesanan pesanan : daftarPesanan) {
+                writer.write(pesanan.getNamaPembeli() + "," + pesanan.getAlamat() + "," + pesanan.getPesanan() + "," + pesanan.getJumlah());
+                writer.newLine();
+            }
+        }
+
+        assertTrue(Files.exists(Paths.get(TEST_FILE)));
+
+        List<String> lines = Files.readAllLines(Paths.get(TEST_FILE));
+        assertEquals(2, lines.size());
+        assertEquals("John Doe,Jl. Mawar,Bayam,5", lines.get(0));
+        assertEquals("Jane Doe,Jl. Melati,Kangkung,3", lines.get(1));
+    }
+
+    @Test
+    public void testPesananToString() {
+        BookingSayurGUI.Pesanan pesanan = new BookingSayurGUI.Pesanan("John Doe", "Jl. Mawar", "Bayam", 5);
+        String expected = "Nama Pembeli: John Doe, Alamat: Jl. Mawar, Pesanan: Bayam, Jumlah: 5";
+        assertEquals(expected, pesanan.toString());
+    }
+
+}
